@@ -48,4 +48,37 @@ app.get('/contracts/:id', getProfile, async (req, res) => {
     }
 })
 
+app.get('/contracts/', getProfile, async (req, res) => {
+    try {
+        const contracts = await Contract.findAll({
+            where: {
+                status: {
+                    [Sequelize.Op.not]: 'terminated',
+                },
+                [Sequelize.Op.or]: [
+                    {ClientId: req.profile.id},
+                    {ContractorId: req.profile.id},
+                ],
+            },
+            include: [
+                {
+                    model: Profile,
+                    as: 'Client',
+                },
+                {
+                    model: Profile,
+                    as: 'Contractor',
+                },
+            ],
+        });
+
+        return res.send(contracts);
+    } catch (error) {
+        console.error(error);
+        return res.status(500).send({error: 'Error fetching contracts'});
+    }
+})
+
+
+
 module.exports = app;
