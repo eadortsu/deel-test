@@ -219,4 +219,69 @@ app.post('/balances/deposit/:userId', getProfile, async (req, res) => {
     }
 })
 
+app.get('/admin/best-profession', getProfile, async (req, res) => {
+    try {
+        const start = req.query.start;
+        const end = req.query.end;
+
+        const bestProfession = await Job.findAll({
+            include: [
+                {
+                    model: Contract,
+                    include: [
+                        {
+                            model: Profile,
+                            as: 'Contractor',
+                            where: {
+                                profession: {
+                                    [Sequelize.Op.ne]: null
+                                }
+                            }
+                        }
+                    ],
+                    where: {
+                        [Sequelize.Op.and]: [
+                            {
+                                createdAt: {
+                                    [Sequelize.Op.gte]: start
+                                }
+                            },
+                            {
+                                createdAt: {
+                                    [Sequelize.Op.lte]: end
+                                }
+                            }
+                        ]
+                    }
+                }
+            ],
+            where: {
+                paid: true
+            },
+            group: [
+                'Contract.Contractor.profession'
+            ],
+            attributes: [
+                'Contract.Contractor.profession',
+                [Sequelize.fn('SUM', Sequelize.col('price')), 'total']
+            ],
+            order: [
+                [Sequelize.fn('SUM', Sequelize.col('price')), 'DESC']
+            ]
+        });
+
+        if (!bestProfession && bestProfession.length === 0) {
+            return res.status(404).send({message: 'No profession found for the given date range'});
+        }
+        const result = {
+            profession: bestProfession[0].Contract.Contractor.profession,
+            total: bestProfession[0].dataValues.total
+        };
+
+        return res.status(200).send(result);
+    } catch (error) {
+        res.status(500).send({message: 'Error fetching best profession' + error});
+    }
+})
+
 module.exports = app;
