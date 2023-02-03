@@ -284,4 +284,46 @@ app.get('/admin/best-profession', getProfile, async (req, res) => {
     }
 })
 
+
+app.get('/admin/best-clients', getProfile, async (req, res) => {
+    const {start, end, limit = 2} = req.query;
+
+    try {
+        let bestClients = await Job.findAll({
+            where: {
+                paymentDate: {
+                    [Op.gte]: start,
+                    [Op.lte]: end
+                },
+                paid: true
+            },
+            include: [{
+                model: Contract,
+                as: 'Contract',
+                include: [{
+                    model: Profile,
+                    as: 'Client',
+                }]
+            }],
+            order: [[sequelize.col('price'), 'DESC']],
+            limit,
+            group: [
+                'Contract.Client.id'
+            ],
+            attributes: [[sequelize.fn('SUM', sequelize.col('price')), 'total_paid'], 'Contract.Client.firstName', 'Contract.Client.lastName']
+        });
+
+        bestClients = bestClients.map(client => {
+            return {
+                id: client.Contract.Client.id,
+                name: `${client.Contract.Client.firstName} ${client.Contract.Client.lastName}`,
+                total_paid: client.dataValues.total_paid
+            }
+        });
+        res.json({bestClients});
+    } catch (error) {
+        res.status(500).send('Error Occurred' + error);
+    }
+})
+
 module.exports = app;
