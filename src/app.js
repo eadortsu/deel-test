@@ -185,5 +185,38 @@ app.post('/jobs/:job_id/pay', getProfile, async (req, res) => {
     }
 })
 
+app.post('/balances/deposit/:userId', getProfile, async (req, res) => {
+    const {userId} = req.params;
+    const {amount} = req.body;
+    try {
+        const client = await Profile.findOne({where: {id: userId, type: 'client'}});
+        if (!client) return res.status(404).json({error: 'Client not found'});
+        const jobsToPay = await Job.sum('price', {
+            include: [
+                {
+                    model: Contract,
+                    where: {
+                        ClientId: userId
+                    },
+                },
+            ], where: {
+                [Sequelize.Op.or]: [
+                    {paid: null},
+                    {paid: 0},
+                ],
+            }
+        });
+        if (amount > jobsToPay * 0.25) {
+            return res.status(400).json({error: `Cannot deposit more than 25% of jobs to pay, max amount is ${jobsToPay * 0.25}`});
+        }
+
+        await sequelize.transaction(async (t) => {
+            await client.update({balance: client.balance + amount}, {transaction: t});
+        });
+        return res.status(200).json({message: 'Balance updated successfully'});
+    } catch (error) {
+        return res.status(500).json({error: error.message});
+    }
+})
 
 module.exports = app;
