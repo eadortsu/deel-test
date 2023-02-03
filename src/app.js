@@ -79,6 +79,34 @@ app.get('/contracts/', getProfile, async (req, res) => {
     }
 })
 
+app.get('/jobs/unpaid', getProfile, async (req, res) => {
+    try {
+        const jobs = await Job.findAll({
+            include: [
+                {
+                    model: Contract,
+                    where: {
+                        status: 'in_progress',
+                        [Sequelize.Op.or]: [
+                            {ContractorId: req.profile.id},
+                            {ClientId: req.profile.id},
+                        ],
+                    },
+                },
+            ],
+            where: {
+                [Sequelize.Op.or]: [
+                    {paid: null},
+                    {paid: 0},
+                ],
+            },
+        });
 
+        return res.send(jobs);
+    } catch (error) {
+        console.error(error);
+        return res.status(500).send({error: 'Error fetching unpaid jobs'});
+    }
+})
 
 module.exports = app;
