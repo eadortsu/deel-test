@@ -109,4 +109,81 @@ app.get('/jobs/unpaid', getProfile, async (req, res) => {
     }
 })
 
+app.post('/jobs/:job_id/pay', getProfile, async (req, res) => {
+    const {job_id} = req.params;
+    const clientId = req.profile.id;
+
+    // Start a transaction
+    const t = await sequelize.transaction();
+
+    try {
+        // Find the job by id and make sure it belongs to the client
+        const job = await Job.findOne({
+            include: [
+                {
+                    model: Contract,
+                    where: {
+                        ClientId: clientId
+                    },
+                },
+            ],
+            where: {
+                id: job_id,
+            },
+        });
+
+        if (!job) {
+            throw new Error('Job not found or doesn\'t belong to the client');
+        }
+
+        // Make sure the job hasn't been paid yet
+        if (job.paid) {
+            throw new Error('Job has already been paid');
+        }
+
+        // Find the client profile and make sure the balance is sufficient
+        //Ensure that the data is isolated from other transactions until the lock is released
+        const client = await Profile.findOne({
+            where: {id: clientId, type: 'client'},
+            lock: t.LOCK.UPDATE
+        });
+
+        if (!client) {
+            throw new Error('Client not found');
+        }
+
+        if (client.balance < job.price) {
+            throw new Error('Insufficient balance');
+        }
+
+        // Find the contractor profile
+        const contractor = await Profile.findOne({
+            where: {id: job.Contract.ContractorId, type: 'contractor'},
+            lock: t.LOCK.UPDATE
+        });
+
+        if (!contractor) {
+            throw new Error('Contractor not found');
+        }
+
+        // Deduct the job price from the client balance and add to the contractor balance
+        await client.update({balance: client.balance - job.price}, {transaction: t});
+        await contractor.update({balance: contractor.balance + job.price}, {transaction: t});
+
+        // Mark the job as paid
+        await job.update({paid: true, paymentDate: new Date()}, {transaction: t});
+
+        // Commit the transaction
+        await t.commit();
+
+        res.sendStatus(200);
+    } catch (error) {
+        // Rollback the transaction if something went wrong
+        await t.rollback();
+
+        res.status(400).send({error: error.message});
+    }
+})
+
+
 module.exports = app;
