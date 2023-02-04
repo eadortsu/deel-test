@@ -105,3 +105,6 @@ Thank you and good luck! 🙏
 3. Added a GitHub action that will run the unit tests on every push to main branch for CI
 4. Added a docker file to run the app in a container
 5. App is deployed on railway [here](https://deel-test-production.up.railway.app)
+
+# TODO
+1. build a frontend with VueJS, to consume the various endpoint, will us axios 
