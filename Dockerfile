@@ -6,7 +6,6 @@ COPY package.json /workspace/
 COPY package.lock.json /workspace/
 RUN npm install
 COPY . .
-
 EXPOSE 3001
 ENV NODE_ENV production
 CMD ["npm", "run", "start:prod"]
