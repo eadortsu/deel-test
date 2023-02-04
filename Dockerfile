@@ -1,13 +1,13 @@
 ## build image
-FROM node:18.14.0-alpine
+FROM node:16.14.2-alpine
 
 WORKDIR /workspace
 COPY package.json /workspace/
-COPY package-lock.json /workspace/
-RUN npm install
+COPY yarn.lock /workspace/
+RUN yarn install
 COPY . .
+RUN yarn build
 
-EXPOSE 3001
+EXPOSE 3000
 ENV NODE_ENV production
-CMD ["node", "/src/server.js"]
-
+CMD ["npm", "run", "start:prod"]

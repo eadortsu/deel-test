@@ -11,6 +11,7 @@
   },
   "scripts": {
     "start": "nodemon ./src/server.js",
+    "start:prod": "node ./src/server.js",
     "seed": "node ./scripts/seedDb.js",
     "test": "mocha './src/test.js'"
   },
