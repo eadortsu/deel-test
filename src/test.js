@@ -71,6 +71,7 @@ describe("GET /admin/best-clients", () => {
 
         expect(res.statusCode).to.equal(200);
         expect(res.body).to.be.an("array");
+        done();
     });
 
     it("applies limit query parameter", async () => {
@@ -81,8 +82,7 @@ describe("GET /admin/best-clients", () => {
 
         expect(res.statusCode).to.equal(200);
         expect(res.body.length).to.equal(1);
+        done();
     });
 });
-
-
 
