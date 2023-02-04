@@ -100,4 +100,8 @@ Thank you and good luck! 🙏
 
 ## Notes
 
-1. Find post man documentation [here](https://documenter.getpostman.com/view/1060005/S1a1y7Qa?version=latest)
+1. Find post man documentation [here](https://documenter.getpostman.com/view/4654839/2s935mtRK5)
+2. Project code available on GitHub [here](https://github.com/eadortsu/deel-test)
+3. Added a GitHub action that will run the unit tests on every push to main branch for CI
+4. Added a docker file to run the app in a container
+5. App is deployed on railway [here](https://deel-test-production.up.railway.app)
