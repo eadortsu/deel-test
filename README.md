@@ -96,3 +96,8 @@ It would be great for example if you'd write some unit test / simple frontend de
 When you have finished the assignment, zip your repo (make sure to include .git folder) and send us the zip.
 
 Thank you and good luck! 🙏
+
+
+## Notes
+
+1. Find post man documentation [here](https://documenter.getpostman.com/view/1060005/S1a1y7Qa?version=latest)

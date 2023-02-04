@@ -85,6 +85,7 @@ app.get('/jobs/unpaid', getProfile, async (req, res) => {
             include: [
                 {
                     model: Contract,
+                    as: 'Contract',
                     where: {
                         status: 'in_progress',
                         [Sequelize.Op.or]: [
@@ -122,6 +123,7 @@ app.post('/jobs/:job_id/pay', getProfile, async (req, res) => {
             include: [
                 {
                     model: Contract,
+                    as: 'Contract',
                     where: {
                         ClientId: clientId
                     },
@@ -195,6 +197,7 @@ app.post('/balances/deposit/:userId', getProfile, async (req, res) => {
             include: [
                 {
                     model: Contract,
+                    as: 'Contract',
                     where: {
                         ClientId: userId
                     },
@@ -228,6 +231,7 @@ app.get('/admin/best-profession', getProfile, async (req, res) => {
             include: [
                 {
                     model: Contract,
+                    as: 'Contract',
                     include: [
                         {
                             model: Profile,
@@ -320,7 +324,7 @@ app.get('/admin/best-clients', getProfile, async (req, res) => {
                 total_paid: client.dataValues.total_paid
             }
         });
-        res.json({bestClients});
+        res.json(bestClients);
     } catch (error) {
         res.status(500).send('Error Occurred' + error);
     }
